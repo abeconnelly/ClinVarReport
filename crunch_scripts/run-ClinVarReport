@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+
+set -e
+set -o pipefail
+
+
+export PATH=$PATH:$CRUNCH_SRC:$CRUNCH_SRC/crunch_scripts:$CRUNCH_SRC/crunch_scripts/bin:.
+. <( arv-dax setup )
+
+mntdir=`arv-dax keep`
+
+jobparam=`arv-dax script_parameters`
+
+verbose=`echo "$jobparam" | jq -r '.VERBOSE_FLAG'`
+
+ifn=$mntdir/`echo "$jobparam" | jq -r '.INPUT_FILE'`
+idb=$mntdir/`echo "$jobparam" | jq -r '.DATABASE_FILE'`
+build=`echo "$jobparam" | jq -r '.GENOME_BUILD'`
+ofn=`echo "$jobparam" | jq -r '.OUTPUT_FILENAME'`
+
+
+if [ "$verbose" == "1" ]
+then
+  echo ">>>>>>>>>>>>>>>>" `/usr/bin/python --version`
+  echo ">>>>>>>>>>>>>>>> ClinVarReport ifn '$ifn', idb '$idb', build '$build', ofn '$ofn'"
+fi
+
+echo "IFN: $ifn"
+head $ifn
+
+echo "RUNNING: clinvar_report.py -c $idb -i $ifn -g $build -t json > $ofn"
+clinvar_report.py -c $idb -i $ifn -g $build -t json > $ofn
+
+arv-dax task finish
+exit 0
