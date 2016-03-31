@@ -17,19 +17,16 @@ verbose=`echo "$jobparam" | jq -r '.VERBOSE_FLAG'`
 ifn=$mntdir/`echo "$jobparam" | jq -r '.INPUT_FILE'`
 idb=$mntdir/`echo "$jobparam" | jq -r '.DATABASE_FILE'`
 build=`echo "$jobparam" | jq -r '.GENOME_BUILD'`
-ofn=`echo "$jobparam" | jq -r '.OUTPUT_FILENAME'`
+#ofn=`echo "$jobparam" | jq -r '.OUTPUT_FILENAME'`
+ofn="out-report.json"
 
 
 if [ "$verbose" == "1" ]
 then
-  echo ">>>>>>>>>>>>>>>>" `/usr/bin/python --version`
   echo ">>>>>>>>>>>>>>>> ClinVarReport ifn '$ifn', idb '$idb', build '$build', ofn '$ofn'"
+  echo "RUNNING: clinvar_report.py -c $idb -i $ifn -g $build -t json > $ofn"
 fi
 
-echo "IFN: $ifn"
-head $ifn
-
-echo "RUNNING: clinvar_report.py -c $idb -i $ifn -g $build -t json > $ofn"
 clinvar_report.py -c $idb -i $ifn -g $build -t json > $ofn
 
 arv-dax task finish
